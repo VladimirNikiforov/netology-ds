@@ -1,3 +1,4 @@
+drop table if exists films;
 create table films( 
          title varchar(255) -- название (текст) 
         ,id serial --соответствует film_id в табличке persons2content 
@@ -6,11 +7,13 @@ create table films(
         ,release_year timestamp --год выпуска 
     );
 
+drop table if exists persons;
 create table persons( 
         id serial -- соответствует person_id в табличке persons2content 
         ,fio varchar(255)  --фамилия, имя 
         );
 
+drop table if exists persons2content;
 create table persons2content( 
         person_id serial -- id персоны 
         ,film_id serial -- id контента 
