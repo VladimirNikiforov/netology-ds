@@ -1,7 +1,7 @@
 drop table if exists films;
 create table films( 
          title varchar(255) -- название (текст) 
-        ,id serial --соответствует film_id в табличке persons2content 
+        ,id serial -- соответствует film_id в табличке persons2content
         ,country varchar(1000) --страна 
         ,box_office serial --сборы в долларах 
         ,release_year timestamp --год выпуска 
