@@ -47,3 +47,5 @@ SELECT t.movieId, k.tags top_rated_tags
   JOIN keywords k on t.movieId = k.id
  ORDER BY avg_rating DESC, movieId ASC;
 
+-- Выгружаем таблицу в текстовый файл с разделителями - табуляцией
+\copy (select * from top_rated_tags) to '/usr/local/share/netology/raw_data/top_rated_tags.tsv' with delimiter as E'\t'
