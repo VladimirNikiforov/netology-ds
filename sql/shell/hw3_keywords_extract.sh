@@ -1,4 +1,4 @@
-#/bin/sh
+#!/usr/bin/env bash
 #Filename: hw3_keywords_extract.sh
 
 echo "Предварительно удаляем таблицу keywords при ее наличии..."
