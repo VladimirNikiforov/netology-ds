@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#Filename: hw3_keywords_extract.sh
+#Filename: hw3_keywords_import.sh
 
 echo "Предварительно удаляем таблицу keywords при ее наличии..."
 psql -U postgres -c "DROP TABLE IF EXISTS keywords"

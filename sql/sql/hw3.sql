@@ -10,3 +10,40 @@ SELECT userId, movieId,
  ORDER BY userId, movieId
  LIMIT 30;
 
+-- Предварительно удаляем таблицу keywords при ее наличии...
+DROP TABLE IF EXISTS keywords;
+-- 1. Создаем таблицу keywords
+CREATE TABLE keywords ( id bigint, tags varchar(32000) );
+
+-- Копирование данных из файла в созданную таблицу
+\copy keywords FROM '/usr/local/share/netology/raw_data/keywords.csv' DELIMITER ',' CSV HEADER
+
+
+-- transform by CTE
+WITH top_rated as (SELECT movieId, AVG(rating) avg_rating
+                     FROM ratings
+                    GROUP BY movieId
+                   HAVING COUNT(distinct userid) > 50
+                    ORDER BY avg_rating DESC, movieId ASC
+                    LIMIT 150
+                  )
+SELECT t.movieId, t.avg_rating, k.tags
+  FROM top_rated t
+  JOIN keywords k on t.movieId = k.id
+ ORDER BY avg_rating DESC, movieId ASC;
+
+
+-- ЗАПРОС3. Load into table TOP_RATED_TAGS
+WITH top_rated as (SELECT movieId, AVG(rating) avg_rating
+                     FROM ratings
+                    GROUP BY movieId
+                   HAVING COUNT(distinct userid) > 50
+                    ORDER BY avg_rating DESC, movieId ASC
+                    LIMIT 150
+                  )
+SELECT t.movieId, k.tags top_rated_tags
+  INTO top_rated_tags
+  FROM top_rated t
+  JOIN keywords k on t.movieId = k.id
+ ORDER BY avg_rating DESC, movieId ASC;
+
