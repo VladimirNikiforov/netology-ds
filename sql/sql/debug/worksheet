@@ -49,6 +49,7 @@ select d.id department_id, d.name department_name, s.avg_num_public
   from Department d
   join sum_publics s on d.id = s.department_id;
 
+/*
 -- ==================================================
 -- DDL&DML to prepare database
 DROP TABLE IF EXISTS Department;
@@ -92,3 +93,4 @@ insert into Employee(id,department_id,cheif_doc_id,name,num_public) values
 ('20', '6', '9', 'Ann', 18);
 
 commit;
+*/
