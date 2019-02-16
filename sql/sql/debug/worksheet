@@ -8,7 +8,7 @@ select d.name department_name, count(distinct e.cheif_doc_id) chief_doc_count
  order by 2 desc;
  
 --Вывести список департаментов, в которых работают 3 и более сотрудников (id и название департамента, количество сотрудников)
-select d.id, d.name department_name, count(e.id) employee_count
+select d.id department_id, d.name department_name, count(e.id) employee_count
   from Department d
   join Employee e on d.id = e.department_id
  group by d.id
@@ -21,7 +21,7 @@ with sum_publics as (select d.id, d.name, sum(e.num_public) sum_public
 					   join Employee e on d.id = e.department_id
 					  group by d.id, d.name
 					 )
-select id, name, sum_public
+select id department_id, name department_name, sum_public
   from sum_publics p
  where sum_public = (select sum_public
 					   from sum_publics
@@ -29,11 +29,27 @@ select id, name, sum_public
 					  limit 1
 					);
 
-select * from Employee
 --Вывести список сотрудников с минимальным количеством публикаций в своем департаменте (id и название департамента, имя сотрудника, количество публикаций)
+with sum_publics as (select e.department_id, min(e.num_public) min_num_public
+					   from Employee e
+					  group by e.department_id
+					)
+select d.id department_id, d.name department_name, e.name employee_name, e.num_public
+  from Department d
+  join Employee e on d.id = e.department_id
+  join sum_publics s on d.id = s.department_id and e.num_public = s.min_num_public;
+
 --Вывести список департаментов и среднее количество публикаций для тех департаментов, в которых работает более одного главного врача (id и название департамента, среднее количество публикаций)
+with sum_publics as (select e.department_id, round(avg(e.num_public),2) avg_num_public
+					   from Employee e
+					  group by e.department_id
+					 having count(distinct e.cheif_doc_id) > 1
+					)
+select d.id department_id, d.name department_name, s.avg_num_public
+  from Department d
+  join sum_publics s on d.id = s.department_id;
 
-
+-- ==================================================
 -- DDL&DML to prepare database
 DROP TABLE IF EXISTS Department;
 create table Department(id integer primary key, 
