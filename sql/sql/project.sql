@@ -47,7 +47,7 @@ create table sales(
 	product_id integer references products(product_id),
 	date_id date references calendar(date_id),
 	qty integer,
-	sum_nv integer)
+	sum_nv integer);
 
 6,Entity,Entity Relationship,1,,,,,,,ProductsHierarchyLink,product_id,integer,FK,preset_id,integer,FK,,,,,,,,,
 7,Entity,Entity Relationship,1,,,,,,,ProductsHierarchyTree,preset_id,integer,PK,pid,integer,FK,tree_id,integer,FK,,,,,,
