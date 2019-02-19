@@ -49,7 +49,8 @@ create table sales(
 	qty integer,
 	sum_nv integer);
 
-6,Entity,Entity Relationship,1,,,,,,,ProductsHierarchyLink,product_id,integer,FK,preset_id,integer,FK,,,,,,,,,
+create table ProductsHierarchyLink(product_id integer references products(product_id),
+								   preset_id integer references ProductsHierarchyTree(preset_id));
 7,Entity,Entity Relationship,1,,,,,,,ProductsHierarchyTree,preset_id,integer,PK,pid,integer,FK,tree_id,integer,FK,,,,,,
 8,Entity,Entity Relationship,1,,,,,,,ProductsHierarchies,tree_id,integer,PK,name,varchar(255),,,,,,,,,,
 9,Entity,Entity Relationship,1,,,,,,,StoresHierarchyLink,store_id,integer,FK,preset_id,integer,FK,,,,,,,,,
