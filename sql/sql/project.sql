@@ -3,7 +3,7 @@
 DROP TABLE IF EXISTS stores;
 create table stores(
 	store_id integer primary key,
-	name varchar(255),
+	name_ varchar(255),
 	date_open date,
 	date_close date);
 delete from stores;
@@ -16,7 +16,7 @@ commit;
 -- select * from stores;
 DROP TABLE IF EXISTS products;
 create table products(product_id integer primary key,
-					  name varchar(255),
+					  name_ varchar(255),
 					  collection varchar(10));
 insert into products values(1, 'BigFoot Boots Black', 'Winter');
 insert into products values(2, 'Tuxedo', 'Summer');
@@ -51,7 +51,8 @@ create table sales(
 	qty integer,
 	sum_nv integer);
 insert into sales(store_id, product_id, date_id, qty, sum_nv)
-select floor(random() * 5 + 1)::int store_id,  floor(random() * 5 + 1)::int product_id, date_id, floor(random() * 2 + 1)::int qty, floor(random() * 10 + 1)::int*1000-1 sum_nv
+select floor(random() * 5 + 1)::int store_id,  floor(random() * 5 + 1)::int product_id, date_id,
+		floor(random() * 2 + 1)::int qty, floor(random() * 10 + 1)::int*1000-1 sum_nv
 FROM (
 	SELECT '2010-01-01'::DATE + 10*SEQUENCE.DAY AS date_id
 	FROM generate_series(0,300) AS SEQUENCE(DAY)
@@ -61,7 +62,7 @@ commit;
 -- select * from sales;
 DROP TABLE IF EXISTS ProductsHierarchies;
 create table ProductsHierarchies(tree_id integer primary key,
-								 name varchar(255));
+								 name_ varchar(255));
 insert into ProductsHierarchies values(1, 'Main product hierarchy');
 insert into ProductsHierarchies values(2, 'Alternative product hierarchy');
 commit;
@@ -87,16 +88,58 @@ insert into ProductsHierarchyTree values(206, 205, 'Clothes', 2);
 insert into ProductsHierarchyTree values(207, 205, 'Shoes', 2);
 commit;
 -- select * from ProductsHierarchyTree;
+-- select * from products
 DROP TABLE IF EXISTS ProductsHierarchyLink;
 create table ProductsHierarchyLink(product_id integer references products(product_id),
 								   preset_id integer references ProductsHierarchyTree(preset_id));
--- insert into ProductsHierarchyLink values()
+insert into ProductsHierarchyLink values(1,106);
+insert into ProductsHierarchyLink values(1,204);
+insert into ProductsHierarchyLink values(2,104);
+insert into ProductsHierarchyLink values(2,203);
+insert into ProductsHierarchyLink values(3,104);
+insert into ProductsHierarchyLink values(3,206);
+insert into ProductsHierarchyLink values(4,105);
+insert into ProductsHierarchyLink values(4,204);
+insert into ProductsHierarchyLink values(5,107);
+insert into ProductsHierarchyLink values(5,207);
 commit;
 -- select * from ProductsHierarchyLink;
-create table StoresHierarchyLink,store_id,integer,FK,preset_id,integer,FK,,,,,,,,,
-create table StoresHierarchyTree,preset_id,integer,PK,pid,integer,FK,tree_id,integer,FK,,,,,,
-create table StoresHierarchies,tree_id,integer,PK,name,varchar(255),,,,,,,,,,
-create table ProductsAttrLink,product_id,integer,FK,attr_id,integer,FK,value,varchar(255),,,,,,,
-create table ProductsAttributes,attr_id,integer,PK,name,varchar(255),,,,,,,,,,
-create table StoresAttrLink,store_id,integer,FK,attr_id,integer,FK,value,varchar(255),,,,,,,
-create table StoresAttributes,attr_id,integer,PK,name,varchar(255),,,,,,,,,,
+DROP TABLE IF EXISTS StoresHierarchies;
+create table StoresHierarchies(tree_id integer primary key,
+							   name_ varchar(255));
+commit;
+-- select * from StoresHierarchies;
+DROP TABLE IF EXISTS StoresHierarchyTree;
+create table StoresHierarchyTree(preset_id integer primary key,
+								 pid integer references StoresHierarchyTree(preset_id),
+								 name_ varchar(255),
+								 tree_id integer references StoresHierarchies(tree_id));
+commit;
+-- select * from StoresHierarchyTree;
+DROP TABLE IF EXISTS StoresHierarchyLink;
+create table StoresHierarchyLink(store_id integer references stores(store_id),
+								 preset_id integer references StoresHierarchyTree(preset_id));
+commit;
+-- select * from StoresHierarchyLink;
+DROP TABLE IF EXISTS ProductsAttributes;
+create table ProductsAttributes(attr_id integer primary key,
+								name_ varchar(255));
+commit;
+-- select * from ProductsAttributes;
+DROP TABLE IF EXISTS ProductsAttrLink;
+create table ProductsAttrLink(product_id integer references products(product_id),
+							  attr_id integer references ProductsAttributes(attr_id),
+							  value_ varchar(255));
+commit;
+-- select * from ProductsAttrLink;
+DROP TABLE IF EXISTS StoresAttributes;
+create table StoresAttributes(attr_id integer primary key,
+							  name_ varchar(255));
+commit;
+-- select * from StoresAttributes;
+DROP TABLE IF EXISTS StoresAttrLink;
+create table StoresAttrLink(store_id integer references stores(store_id),
+							attr_id integer references StoresAttributes(attr_id),
+							value_ varchar(255));
+commit;
+-- select * from StoresAttrLink;
