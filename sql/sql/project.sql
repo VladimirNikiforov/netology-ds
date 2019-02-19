@@ -59,9 +59,13 @@ FROM (
      ) DQ;
 commit;
 -- select * from sales;
+DROP TABLE IF EXISTS ProductsHierarchies;
 create table ProductsHierarchies(tree_id integer primary key,
 								 name varchar(255));
-insert into 
+insert into ProductsHierarchies values(1, 'Main product hierarchy');
+insert into ProductsHierarchies values(2, 'Alternative product hierarchy');
+commit;
+-- select * from ProductsHierarchies;
 create table ProductsHierarchyTree(preset_id integer primary key,
 								   pid integer references ProductsHierarchyTree(preset_id),
 								   tree_id integer references ProductsHierarchies(tree_id));
