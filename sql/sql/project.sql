@@ -41,37 +41,37 @@ FROM (
 	GROUP BY SEQUENCE.DAY
      ) DQ
 ORDER BY 1;
+commit;
 -- select * from calendar;
+DROP TABLE IF EXISTS sales;
 create table sales(
 	store_id integer references stores(store_id), 
 	product_id integer references products(product_id),
 	date_id date references calendar(date_id),
 	qty integer,
 	sum_nv integer);
-
+insert into sales(store_id, product_id, date_id, qty, sum_nv)
+select floor(random() * 5 + 1)::int store_id,  floor(random() * 5 + 1)::int product_id, date_id, floor(random() * 2 + 1)::int qty, floor(random() * 10 + 1)::int*1000-1 sum_nv
+FROM (
+	SELECT '2010-01-01'::DATE + 10*SEQUENCE.DAY AS date_id
+	FROM generate_series(0,300) AS SEQUENCE(DAY)
+	GROUP BY SEQUENCE.DAY
+     ) DQ;
+commit;
+-- select * from sales;
+create table ProductsHierarchies(tree_id integer primary key,
+								 name varchar(255));
+insert into 
+create table ProductsHierarchyTree(preset_id integer primary key,
+								   pid integer references ProductsHierarchyTree(preset_id),
+								   tree_id integer references ProductsHierarchies(tree_id));
 create table ProductsHierarchyLink(product_id integer references products(product_id),
 								   preset_id integer references ProductsHierarchyTree(preset_id));
-7,Entity,Entity Relationship,1,,,,,,,ProductsHierarchyTree,preset_id,integer,PK,pid,integer,FK,tree_id,integer,FK,,,,,,
-8,Entity,Entity Relationship,1,,,,,,,ProductsHierarchies,tree_id,integer,PK,name,varchar(255),,,,,,,,,,
-9,Entity,Entity Relationship,1,,,,,,,StoresHierarchyLink,store_id,integer,FK,preset_id,integer,FK,,,,,,,,,
-10,Entity,Entity Relationship,1,,,,,,,StoresHierarchyTree,preset_id,integer,PK,pid,integer,FK,tree_id,integer,FK,,,,,,
-11,Entity,Entity Relationship,1,,,,,,,StoresHierarchies,tree_id,integer,PK,name,varchar(255),,,,,,,,,,
-12,Entity,Entity Relationship,1,,,,,,,ProductsAttrLink,product_id,integer,FK,attr_id,integer,FK,value,varchar(255),,,,,,,
-13,Entity,Entity Relationship,1,,,,,,,ProductsAttributes,attr_id,integer,PK,name,varchar(255),,,,,,,,,,
-14,Entity,Entity Relationship,1,,,,,,,StoresAttrLink,store_id,integer,FK,attr_id,integer,FK,value,varchar(255),,,,,,,
-15,Entity,Entity Relationship,1,,,,,,,StoresAttributes,attr_id,integer,PK,name,varchar(255),,,,,,,,,,
-16,Line,,1,,,2,4,CFN ERD One Or More Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-17,Line,,1,,,5,2,CFN ERD Exactly One Arrow,CFN ERD One Or More Arrow,,,,,,,,,,,,,,,,
-18,Line,,1,,,2,3,CFN ERD One Or More Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-19,Line,,1,,,4,6,CFN ERD Exactly One Arrow,CFN ERD One Or More Arrow,,,,,,,,,,,,,,,,
-20,Line,,1,,,6,7,CFN ERD Many Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-21,Line,,1,,,7,7,CFN ERD One Or More Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-22,Line,,1,,,7,8,CFN ERD Many Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-23,Line,,1,,,3,9,CFN ERD Exactly One Arrow,CFN ERD One Or More Arrow,,,,,,,,,,,,,,,,
-24,Line,,1,,,9,10,CFN ERD Many Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-25,Line,,1,,,10,10,CFN ERD One Or More Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-26,Line,,1,,,10,11,CFN ERD Many Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-27,Line,,1,,,4,12,CFN ERD Exactly One Arrow,CFN ERD One Or More Arrow,,,,,,,,,,,,,,,,
-28,Line,,1,,,12,13,CFN ERD Many Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
-29,Line,,1,,,3,14,CFN ERD Exactly One Arrow,CFN ERD One Or More Arrow,,,,,,,,,,,,,,,,
-30,Line,,1,,,14,15,CFN ERD Many Arrow,CFN ERD Exactly One Arrow,,,,,,,,,,,,,,,,
+
+create table StoresHierarchyLink,store_id,integer,FK,preset_id,integer,FK,,,,,,,,,
+create table StoresHierarchyTree,preset_id,integer,PK,pid,integer,FK,tree_id,integer,FK,,,,,,
+create table StoresHierarchies,tree_id,integer,PK,name,varchar(255),,,,,,,,,,
+create table ProductsAttrLink,product_id,integer,FK,attr_id,integer,FK,value,varchar(255),,,,,,,
+create table ProductsAttributes,attr_id,integer,PK,name,varchar(255),,,,,,,,,,
+create table StoresAttrLink,store_id,integer,FK,attr_id,integer,FK,value,varchar(255),,,,,,,
+create table StoresAttributes,attr_id,integer,PK,name,varchar(255),,,,,,,,,,
