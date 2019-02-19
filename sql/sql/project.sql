@@ -66,12 +66,33 @@ insert into ProductsHierarchies values(1, 'Main product hierarchy');
 insert into ProductsHierarchies values(2, 'Alternative product hierarchy');
 commit;
 -- select * from ProductsHierarchies;
+DROP TABLE IF EXISTS ProductsHierarchyTree;
 create table ProductsHierarchyTree(preset_id integer primary key,
 								   pid integer references ProductsHierarchyTree(preset_id),
+								   name_ varchar(255),
 								   tree_id integer references ProductsHierarchies(tree_id));
+insert into ProductsHierarchyTree values(101, null, 'Total', 1);
+insert into ProductsHierarchyTree values(102, 101, 'Clothes', 1);
+insert into ProductsHierarchyTree values(103, 102, 'Casual', 1);
+insert into ProductsHierarchyTree values(104, 102, 'ForHolidays', 1);
+insert into ProductsHierarchyTree values(105, 101, 'Shoes', 1);
+insert into ProductsHierarchyTree values(106, 105, 'Casual', 1);
+insert into ProductsHierarchyTree values(107, 105, 'ForHolidays', 1);
+insert into ProductsHierarchyTree values(201, null, 'Total', 2);
+insert into ProductsHierarchyTree values(202, 201, 'Man', 2);
+insert into ProductsHierarchyTree values(203, 202, 'Clothes', 2);
+insert into ProductsHierarchyTree values(204, 202, 'Shoes', 2);
+insert into ProductsHierarchyTree values(205, 201, 'Woman', 2);
+insert into ProductsHierarchyTree values(206, 205, 'Clothes', 2);
+insert into ProductsHierarchyTree values(207, 205, 'Shoes', 2);
+commit;
+-- select * from ProductsHierarchyTree;
+DROP TABLE IF EXISTS ProductsHierarchyLink;
 create table ProductsHierarchyLink(product_id integer references products(product_id),
 								   preset_id integer references ProductsHierarchyTree(preset_id));
-
+-- insert into ProductsHierarchyLink values()
+commit;
+-- select * from ProductsHierarchyLink;
 create table StoresHierarchyLink,store_id,integer,FK,preset_id,integer,FK,,,,,,,,,
 create table StoresHierarchyTree,preset_id,integer,PK,pid,integer,FK,tree_id,integer,FK,,,,,,
 create table StoresHierarchies,tree_id,integer,PK,name,varchar(255),,,,,,,,,,
