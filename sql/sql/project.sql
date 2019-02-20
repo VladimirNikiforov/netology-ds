@@ -138,3 +138,60 @@ select product_full_name product, qty_sum total_sum
   from v_product_tree v
   join presets_sum p on v.preset_id = p.preset_id
  order by order_;
+
+--================ 4. Получим продажи в разрезе магазинной иерархии ================
+-- сначала подготовим вью - альтернативный вариант - параметризированная функция (чтобы номер дерева подавать в функцию)
+drop view if exists v_obj_hierarchy;
+create or replace view v_obj_hierarchy as
+select preset_id, pid, name_, tree_id, null store_id, name_ preset_name, null store_name
+  from StoresHierarchyTree
+ union all
+select (-1000)*l.preset_id + p.store_id preset_id, l.preset_id pid, p.name_, t.tree_id, p.store_id, null preset_name, p.name_ store_name
+  from StoresHierarchyLink l
+  join StoresHierarchyTree t on l.preset_id = t.preset_id
+  join Stores p on l.store_id = p.store_id;
+commit;
+-- а теперь сами продажи по магазинам
+with v_obj_tree as (
+with recursive tree_full_names as (
+select pl.preset_id::varchar, pl.pid::varchar, ARRAY[name_]::varchar as path
+  from v_obj_hierarchy pl
+ where tree_id = 1
+   and pl.pid is null
+ union all
+select t2.preset_id::varchar, t2.pid::varchar, (cte.path ||'/'|| t2.name_)::varchar
+  from v_obj_hierarchy as t2
+  join tree_full_names cte on cte.preset_id = t2.pid::varchar
+),
+nice_tree as (select preset_id, pid, level lvl, row_number() over() order_
+			    from connectby('v_obj_hierarchy', 'preset_id', 'pid', '1', 0)
+ 					 as t(preset_id integer, pid integer, level int)
+			 )
+select t.*, v.store_id, preset_name, store_name, tfn.path store_full_name
+  from nice_tree t
+  	   join tree_full_names tfn on t.preset_id::varchar = tfn.preset_id
+  	   join v_obj_hierarchy v on t.preset_id = v.preset_id
+ order by order_
+),
+tt as (select preset_id, pid, sum(s.qty) qty
+			  from v_obj_tree v
+			  left join sales s on v.store_id = s.store_id
+			 group by preset_id, pid
+			),
+sls as (
+with recursive tree_sales as (
+select pl.preset_id, pl.pid, qty
+  from tt pl
+ where qty is not null
+ union all
+select t2.preset_id, t2.pid, cte.qty qty
+  from tt t2
+  join tree_sales cte on cte.pid = t2.preset_id
+)
+select * from tree_sales),
+presets_sum as (select preset_id, sum(qty) qty_sum from sls group by preset_id order by preset_id)
+select store_full_name product, qty_sum total_sum
+  from v_obj_tree v
+  join presets_sum p on v.preset_id = p.preset_id
+ order by order_;
+
