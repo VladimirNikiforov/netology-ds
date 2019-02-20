@@ -21,7 +21,8 @@ select * from StoresAttributes;
 select * from StoresAttrLink;
 commit;
 
--- Построим дерево товаров с помощью рекурсивного CTE
+--================ 1. Получим товарную иерархию с товарами ================
+-- Построим дерево товаров с помощью рекурсивного CTE:
 with recursive cte as (
    select pid, preset_id, name_, 1 lvl
      from ProductsHierarchyTree
@@ -37,7 +38,19 @@ select preset_id, name_, lvl
  order by lvl;
 commit;
 -- Выглядит ужасно (сначала идут элементы уровня 1, потом уровня 2, потом уровня 3)
--- можно было бы конечно отсортировать по preset_id, но это не наш подход => ставим tablefunc
+-- Попробуем так:
+WITH RECURSIVE cte AS (
+SELECT pl.preset_id::varchar, pl.pid::varchar, ARRAY[name_]::varchar as path
+ FROM ProductsHierarchyTree pl
+ WHERE tree_id = 1 and pl.pid is null
+ UNION ALL
+ SELECT t2.preset_id::varchar, t2.pid::varchar, (cte.path ||'/'|| t2.name_)::varchar
+ FROM ProductsHierarchyTree as t2 inner join cte on (cte.preset_id=t2.pid::varchar)
+)
+SELECT preset_id,path as path
+  FROM cte;
+-- Уже лучше - подобие sys_connect_by_path, но всё-равно сортировка по уровням.
+-- Можно было бы конечно отсортировать по preset_id, но это не наш подход => ставим tablefunc
 CREATE EXTENSION IF NOT EXISTS tablefunc;
 with tree as (select preset_id, pid, level lvl
 			    from connectby('ProductsHierarchyTree', 'preset_id', 'pid', '101', 0)
@@ -47,4 +60,4 @@ select t.*, tnames.name_ preset, p.name_ product, tnames.name_ || case when p.na
   from tree t
   	   join ProductsHierarchyTree tnames on t.preset_id = tnames.preset_id
 	   left join ProductsHierarchyLink l on t.preset_id = l.preset_id
-	   left join Products p on l.product_id = p.product_id
+	   left join Products p on l.product_id = p.product_id;
