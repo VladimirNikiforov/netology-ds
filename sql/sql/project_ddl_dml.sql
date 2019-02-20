@@ -99,7 +99,7 @@ insert into ProductsHierarchyLink values(2,104);
 insert into ProductsHierarchyLink values(2,203);
 insert into ProductsHierarchyLink values(3,104);
 insert into ProductsHierarchyLink values(3,206);
-insert into ProductsHierarchyLink values(4,105);
+insert into ProductsHierarchyLink values(4,106);
 insert into ProductsHierarchyLink values(4,204);
 insert into ProductsHierarchyLink values(5,107);
 insert into ProductsHierarchyLink values(5,207);
