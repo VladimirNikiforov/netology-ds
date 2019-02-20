@@ -44,20 +44,66 @@ SELECT pl.preset_id::varchar, pl.pid::varchar, ARRAY[name_]::varchar as path
  FROM ProductsHierarchyTree pl
  WHERE tree_id = 1 and pl.pid is null
  UNION ALL
- SELECT t2.preset_id::varchar, t2.pid::varchar, (cte.path ||'/'|| t2.name_)::varchar
+ SELECT t2.preset_id::varchar, t2.pid::varchar, (cte.path || '/'|| t2.name_)::varchar
  FROM ProductsHierarchyTree as t2 inner join cte on (cte.preset_id=t2.pid::varchar)
 )
-SELECT preset_id,path as path
+SELECT preset_id, path as path
   FROM cte;
 -- Уже лучше - подобие sys_connect_by_path, но всё-равно сортировка по уровням.
 -- Можно было бы конечно отсортировать по preset_id, но это не наш подход => ставим tablefunc
 CREATE EXTENSION IF NOT EXISTS tablefunc;
-with tree as (select preset_id, pid, level lvl
+-- А теперь повеселимся:
+with recursive tree_full_names as (
+select pl.preset_id::varchar, pl.pid::varchar, ARRAY[name_]::varchar as path
+  from ProductsHierarchyTree pl
+ where tree_id = 1
+   and pl.pid is null
+ union all
+select t2.preset_id::varchar, t2.pid::varchar, (cte.path ||'/'|| t2.name_)::varchar
+  from ProductsHierarchyTree as t2
+  join tree_full_names cte on cte.preset_id = t2.pid::varchar
+),
+nice_tree as (select preset_id, pid, level lvl, row_number() over() order_
 			    from connectby('ProductsHierarchyTree', 'preset_id', 'pid', '101', 0)
  					 as t(preset_id integer, pid integer, level int)
 			 )
-select t.*, tnames.name_ preset, p.name_ product, tnames.name_ || case when p.name_ is null then '' else '\' || p.name_ end product_full_name
-  from tree t
+select t.*, tnames.name_ preset, p.product_id, p.name_ product, tfn.path || case when p.name_ is null then '' else '/' || p.name_ end product_full_name
+  from nice_tree t
+  	   join tree_full_names tfn on t.preset_id::varchar = tfn.preset_id
   	   join ProductsHierarchyTree tnames on t.preset_id = tnames.preset_id
 	   left join ProductsHierarchyLink l on t.preset_id = l.preset_id
-	   left join Products p on l.product_id = p.product_id;
+	   left join Products p on l.product_id = p.product_id
+ order by order_;
+-- Круто! Посмотрим продажи товара через товарную иерархию
+-- Чтобы не гонять весь код построения дерева - обернем во view:
+DROP VIEW IF EXISTS v_product_tree;
+create or replace view v_product_tree as
+with recursive tree_full_names as (
+select pl.preset_id::varchar, pl.pid::varchar, ARRAY[name_]::varchar as path
+  from ProductsHierarchyTree pl
+ where tree_id = 1
+   and pl.pid is null
+ union all
+select t2.preset_id::varchar, t2.pid::varchar, (cte.path ||'/'|| t2.name_)::varchar
+  from ProductsHierarchyTree as t2
+  join tree_full_names cte on cte.preset_id = t2.pid::varchar
+),
+nice_tree as (select preset_id, pid, level lvl, row_number() over() order_
+			    from connectby('ProductsHierarchyTree', 'preset_id', 'pid', '101', 0)
+ 					 as t(preset_id integer, pid integer, level int)
+			 )
+select t.*, tnames.name_ preset, p.product_id, p.name_ product, tfn.path || case when p.name_ is null then '' else '/' || p.name_ end product_full_name
+  from nice_tree t
+  	   join tree_full_names tfn on t.preset_id::varchar = tfn.preset_id
+  	   join ProductsHierarchyTree tnames on t.preset_id = tnames.preset_id
+	   left join ProductsHierarchyLink l on t.preset_id = l.preset_id
+	   left join Products p on l.product_id = p.product_id
+ order by order_;
+commit;
+-- Итак, продажи товара через товарную иерархию:
+select product_full_name, product, order_, sum(s.qty) qty
+  from v_product_tree v
+  left join sales s on v.product_id = s.product_id
+ group by product_full_name, product, order_
+ order by order_;
+commit;
