@@ -20,6 +20,12 @@ select * from ProductsAttrLink;
 select * from StoresAttributes;
 select * from StoresAttrLink;
 
+-- В какие дни больше покупают
+select case when c.holiday = 0 then 'Рабочий день' else 'Выходной день' end day_type, round(avg(qty),2) qty
+  from sales s
+  join calendar c on s.date_id = c.date_id
+ group by c.holiday
+ order by qty desc;
 -- Сумма по каждому товару
 select p.name_, sum(sum_nv) sum_nv
   from sales s
