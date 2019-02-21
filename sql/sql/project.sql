@@ -63,11 +63,13 @@ select store_id, product_id, sum(qty) qty
   from sales
  group by store_id, product_id
  order by store_id, qty desc
-), ranks as (select store_id, product_id, qty, rank() over (partition by store_id, product_id order by qty desc) rnk
+), ranks as (select store_id, product_id, qty, rank() over (partition by store_id order by qty desc) rnk
 			   from sums
 			)
-select store_id, product_id, qty
-  from ranks
+select s.name_ store_name, p.name_ product_name, qty
+  from ranks r
+  join products p on r.product_id = p.product_id
+  join stores s on r.store_id = s.store_id
  where rnk = 1;
 --================ Получим товарную иерархию с товарами ================
 -- Построим дерево товаров с помощью рекурсивного CTE:
