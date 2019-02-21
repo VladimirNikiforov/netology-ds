@@ -19,9 +19,57 @@ select * from ProductsAttributes;
 select * from ProductsAttrLink;
 select * from StoresAttributes;
 select * from StoresAttrLink;
-commit;
 
---================ 1. Получим товарную иерархию с товарами ================
+-- Сумма по каждому товару
+select p.name_, sum(sum_nv) sum_nv
+  from sales s
+  join products p on s.product_id = p.product_id
+ group by p.name_
+ order by 2 desc;
+-- Посмотрим на ранги магазинов по суммам продаж
+select name_, sum_nv, dense_rank() over (order by sum_nv desc) rank_
+  from (select distinct p.name_, sum(sum_nv) over (partition by p.name_) sum_nv
+		  from sales s
+		  join stores p on s.store_id = p.store_id
+	   ) t;
+-- Какой цвет продается лучше всего? Группировка по атрибутам товара + сумма продаж.
+select l.value_, sum(sum_nv) sum_nv
+  from ProductsAttributes a
+  join ProductsAttrLink l on a.attr_id = l.attr_id
+  join sales p on l.product_id = p.product_id
+ where a.attr_id = 1
+ group by l.value_
+ order by 2 desc;
+-- Где продажи лучше всего? Группировка по атрибутам магазина + сумма продаж
+select l.value_, sum(sum_nv) sum_nv
+  from StoresAttributes a
+  join StoresAttrLink l on a.attr_id = l.attr_id
+  join sales p on l.store_id = p.store_id
+ where a.attr_id = 1
+ group by l.value_
+ order by 2 desc;
+-- Посмотрим на общие суммы продаж по номеру недели в году и определим на какой недели самый большой прирост относительно предыдущей недели
+select weekid, sum_nv, sum_nv - lag(sum_nv) over (order by weekid) delta
+  from (select c.weekid, sum(sum_nv) sum_nv
+		  from sales p 
+		  join calendar c on c.date_id = p.date_id
+		 group by c.weekid
+	   ) t
+ order by 3 desc nulls last
+ limit 1;
+-- Определим товар bestseller (в штуках) для каждого магазина
+with sums as (
+select store_id, product_id, sum(qty) qty
+  from sales
+ group by store_id, product_id
+ order by store_id, qty desc
+), ranks as (select store_id, product_id, qty, rank() over (partition by store_id, product_id order by qty desc) rnk
+			   from sums
+			)
+select store_id, product_id, qty
+  from ranks
+ where rnk = 1;
+--================ Получим товарную иерархию с товарами ================
 -- Построим дерево товаров с помощью рекурсивного CTE:
 with recursive cte as (
    select pid, preset_id, name_, 1 lvl
@@ -83,7 +131,7 @@ select t.*, v.product_id, preset_name, product_name, tfn.path product_full_name
   	   join tree_full_names tfn on t.preset_id::varchar = tfn.preset_id
   	   join v_products_hierarchy v on t.preset_id = v.preset_id
  order by order_;
---================ 2. Получим продажи товара через товарную иерархию ================
+--================ Получим продажи товара через товарную иерархию ================
 -- Круто! Посмотрим продажи товара через товарную иерархию
 -- Чтобы не гонять весь код построения дерева - обернем во view:
 drop view if exists v_product_tree;
@@ -115,7 +163,7 @@ select product_full_name, product_name, order_, sum(s.qty) qty
  group by product_full_name, product_name, order_
  order by order_;
 commit;
---================ 3. Получим продажи товара по всей товарной иерархии ================
+--================ Получим продажи товара по всей товарной иерархии ================
 -- Да, продажи есть на товаре, но теперь уже хочется получить суммы и вверх по дереву
 with tt as (select preset_id, pid, sum(s.qty) qty
 			  from v_product_tree v
@@ -139,7 +187,7 @@ select product_full_name product, qty_sum total_sum
   join presets_sum p on v.preset_id = p.preset_id
  order by order_;
 
---================ 4. Получим продажи в разрезе магазинной иерархии ================
+--================ Получим продажи в разрезе магазинной иерархии ================
 -- сначала подготовим вью - альтернативный вариант - параметризированная функция (чтобы номер дерева подавать в функцию)
 drop view if exists v_obj_hierarchy;
 create or replace view v_obj_hierarchy as
@@ -194,4 +242,3 @@ select store_full_name product, qty_sum total_sum
   from v_obj_tree v
   join presets_sum p on v.preset_id = p.preset_id
  order by order_;
-
