@@ -2,7 +2,7 @@
 # Фильтрация рейтингов с оценкой 5.0
 
 # на Mac / Linux
-# cat data/* | python command_line_script.py > filtered.txt
+# cat data/* | python 1_command_line_script.py > filtered.txt
 
 import sys
 
