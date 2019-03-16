@@ -1,0 +1,65 @@
+#Выгрузка происходит из нескольких систем (vk, mytarget, dbm).
+#У каждой системы есть несколько аккаунтов (account1, account2, ...).
+#Для выгрузки данных из каждого аккаунта есть своя пара ключей приложения client_id и client_secret.
+#Также у каждого аккаунта есть набор клиентов (client1, client2, ...), у каждого из которых есть свой логин и refresh_token.
+
+systems:
+    vk:
+        account1:
+            client_id: user1
+            client_secret: nopassanymore
+            client1:
+                login: client1login
+                refresh_token: client1refresh_token
+            client2:
+                login: client1login
+                refresh_token: client2refresh_token
+        account2:
+            client_id: user2
+            client_secret: nopassanymore
+            client1:
+                login: client1login
+                refresh_token: client1refresh_token
+            client2:
+                login: client1login
+                refresh_token: client2refresh_token
+
+    mytarget:
+        account3:
+            client_id: user3
+            client_secret: nopassanymore
+            client1:
+                login: client1login
+                refresh_token: client1refresh_token
+            client2:
+                login: client1login
+                refresh_token: client2refresh_token
+        account4:
+            client_id: user4
+            client_secret: nopassanymore
+            client1:
+                login: client1login
+                refresh_token: client1refresh_token
+            client2:
+                login: client1login
+                refresh_token: client2refresh_token
+
+    dbm:
+        account5:
+            client_id: user5
+            client_secret: nopassanymore
+            client1:
+                login: client1login
+                refresh_token: client1refresh_token
+            client2:
+                login: client1login
+                refresh_token: client2refresh_token
+        account6:
+            client_id: user6
+            client_secret: nopassanymore
+            client1:
+                login: client1login
+                refresh_token: client1refresh_token
+            client2:
+                login: client1login
+                refresh_token: client2refresh_token
