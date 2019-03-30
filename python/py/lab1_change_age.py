@@ -7,7 +7,7 @@ import sys
 import json
 
 # Needs two parameters
-assert(sys.argv[0] == 2)
+assert(len(sys.argv) == 2+1)
 
 fio = sys.argv[1]
 new_age = sys.argv[2]
