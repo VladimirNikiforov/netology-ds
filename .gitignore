@@ -1,15 +1,5 @@
-/4. ML/lab/.ipynb_checkpoints/
-/4. ML/ipynb/.ipynb_checkpoints/
-/4. ML/hw/.ipynb_checkpoints/
-/3. EDA/lab/.ipynb_checkpoints/
-/3. EDA/ipynb/.ipynb_checkpoints/
-/3. EDA/hw/.ipynb_checkpoints/
-/3. EDA/data/.ipynb_checkpoints/
-/1. SQL/ipynb/.ipynb_checkpoints/
-/1. SQL/img/.ipynb_checkpoints/
-/1. SQL/.ipynb_checkpoints/
-/1. SQL/img/.directory
-/1. SQL/.Rhistory
-/data-scientist4-master.zip
-/1. SQL/ipynb/.directory
-/.idea/
+.ipynb_checkpoints
+.directory
+.Rhistory
+*.zip
+.idea
