@@ -1,2 +1,0 @@
-Сделать анализ датасета Glass wine. 
-https://www.kaggle.com/uciml/glass/kernels
